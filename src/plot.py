@@ -11,10 +11,12 @@ def plot_all(results_df: pd.DataFrame,
     plot_scores_by_max_distance_colored_by_initialization(
         results_df=results_df)
 
+    plot_num_iters_by_max_distance_colored_by_initialization(
+        results_df=results_df)
+
     plot_num_clusters_by_max_distance_colored_by_initialization(
         results_df=results_df,
-        true_num_clusters=len(np.unique(mixture_model_results['cluster_assignments']))
-    )
+        true_num_clusters=len(np.unique(mixture_model_results['cluster_assignments'])))
 
 
 def plot_num_clusters_by_max_distance_colored_by_initialization(
@@ -34,7 +36,20 @@ def plot_num_clusters_by_max_distance_colored_by_initialization(
     plt.show()
 
 
-def plot_scores_by_max_distance_colored_by_initialization(results_df: pd.DataFrame):
+def plot_num_iters_by_max_distance_colored_by_initialization(
+        results_df: pd.DataFrame):
+
+    sns.lineplot(data=results_df, x='lambda', y='Num Iter To Convergence',
+                 hue='Initialization')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.xlabel(r'$\lambda$')
+    plt.legend()
+    plt.show()
+
+
+def plot_scores_by_max_distance_colored_by_initialization(
+        results_df: pd.DataFrame):
 
     scores_columns = [col for col in results_df.columns.values
                       if 'Score' in col]
