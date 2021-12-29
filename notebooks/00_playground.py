@@ -5,7 +5,7 @@ import pandas as pd
 from src.data.synthetic import sample_mixture_model
 from src.inference.dpmeans_quick import DPMeans
 from src.metrics import compute_predicted_clusters_scores
-import src.plot
+from src.plot import plot_all
 
 obs_dim = 13
 mixture_model_results = sample_mixture_model(
@@ -44,10 +44,6 @@ for init_method, max_distance_param in product(init_methods, max_distance_params
 
 results_df = pd.DataFrame(df_rows)
 
-# src.plot.plot_scores_by_max_distance_colored_by_initialization(
-#     results_df=results_df)
-
-src.plot.plot_num_clusters_by_max_distance_colored_by_initialization(
+plot_all(
     results_df=results_df,
-    true_num_clusters=len(np.unique(mixture_model_results['cluster_assignments']))
-)
+    mixture_model_results=mixture_model_results)

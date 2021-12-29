@@ -1,9 +1,20 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
+from typing import Dict
 
 
-# def plot_all(results_df: pd.DataFrame):
+def plot_all(results_df: pd.DataFrame,
+             mixture_model_results: Dict,):
+
+    plot_scores_by_max_distance_colored_by_initialization(
+        results_df=results_df)
+
+    plot_num_clusters_by_max_distance_colored_by_initialization(
+        results_df=results_df,
+        true_num_clusters=len(np.unique(mixture_model_results['cluster_assignments']))
+    )
 
 
 def plot_num_clusters_by_max_distance_colored_by_initialization(
@@ -19,6 +30,7 @@ def plot_num_clusters_by_max_distance_colored_by_initialization(
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel(r'$\lambda$')
+    plt.legend()
     plt.show()
 
 
@@ -33,4 +45,5 @@ def plot_scores_by_max_distance_colored_by_initialization(results_df: pd.DataFra
                      hue='Initialization')
         plt.xscale('log')
         plt.xlabel(r'$\lambda$')
+        plt.legend()
         plt.show()
