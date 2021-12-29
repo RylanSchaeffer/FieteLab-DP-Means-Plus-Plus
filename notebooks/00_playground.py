@@ -3,11 +3,9 @@ import numpy as np
 import pandas as pd
 
 from src.data.synthetic import sample_mixture_model
-from src.metrics import compute_predicted_clusters_scores
 from src.inference.dpmeans_quick import DPMeans
-
-# Some random data
-# X = np.eye(57)[np.random.choice(np.arange(57), replace=True, size=100), :]
+from src.metrics import compute_predicted_clusters_scores
+import src.plot
 
 obs_dim = 13
 mixture_model_results = sample_mixture_model(
@@ -16,7 +14,7 @@ mixture_model_results = sample_mixture_model(
     likelihood_params_prior=dict(mean=np.zeros(obs_dim),
                                  cov=10 * np.eye(obs_dim)))
 
-max_distance_params = np.logspace(-4, 4, 31)
+max_distance_params = np.logspace(-3, 3, 61)
 init_methods = ['dp-means']  # , 'dp-means++']
 
 df_rows = []
@@ -33,7 +31,7 @@ for init_method, max_distance_param in product(init_methods, max_distance_params
         'Initialization': init_method,
         'lambda': max_distance_param,
         'Num Iter To Convergence': dpmeans.n_iter_,
-        'Num Clusters': dpmeans.cluster_centers_.shape[0],
+        'Num Clusters': dpmeans.num_clusters_,
     }
 
     scores, pred_cluster_assignments = compute_predicted_clusters_scores(
@@ -44,15 +42,12 @@ for init_method, max_distance_param in product(init_methods, max_distance_params
 
     df_rows.append(row)
 
-df = pd.DataFrame(df_rows)
+results_df = pd.DataFrame(df_rows)
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+# src.plot.plot_scores_by_max_distance_colored_by_initialization(
+#     results_df=results_df)
 
-sns.lineplot(data=df, x='lambda', y='Adjusted Mutual Info Score',
-             hue='Initialization')
-plt.xscale('log')
-plt.xlabel(r'$\lambda$')
-plt.show()
-
-print(10)
+src.plot.plot_num_clusters_by_max_distance_colored_by_initialization(
+    results_df=results_df,
+    true_num_clusters=len(np.unique(mixture_model_results['cluster_assignments']))
+)

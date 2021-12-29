@@ -162,6 +162,7 @@ class DPMeans:
         self.algorithm = algorithm
 
         self.cluster_centers_ = None
+        self.num_clusters_ = None
         self.labels_ = None
         self.n_iter_ = None
 
@@ -262,6 +263,7 @@ class DPMeans:
             centers += X_mean
 
         self.cluster_centers_ = centers
+        self.num_clusters_ = centers.shape[0]
         self.labels_ = labels
         self.n_iter_ = n_iter_
         return self
