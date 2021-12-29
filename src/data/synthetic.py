@@ -290,8 +290,10 @@ def sample_griffiths_ghahramani_2005(num_obs: int = 100,
 
 
 def sample_mixture_model(num_obs: int,
+                         obs_dim: int,
                          mixing_probabilities: np.ndarray,
-                         likelihood_params_prior: Dict[str, np.ndarray],
+                         centroids_prior_cov_prefactor: float,
+                         likelihood_cov_prefactor: float,
                          ) -> Dict[str, np.ndarray]:
 
     num_mixture_components = len(mixing_probabilities)
@@ -304,14 +306,13 @@ def sample_mixture_model(num_obs: int,
 
     # sample Gaussian means from Gaussian prior
     means = np.random.multivariate_normal(
-        mean=likelihood_params_prior['mean'],
-        cov=likelihood_params_prior['cov'],
+        mean=np.zeros(obs_dim),
+        cov=centroids_prior_cov_prefactor * np.eye(obs_dim),
         size=num_mixture_components)
 
     # all Gaussians have same covariance
-    # cov = gaussian_cov_scaling * np.eye(gaussian_dim)
     # TODO: generalize this so that arbitrary covariances can be used
-    cov = np.eye(means.shape[1])
+    cov = likelihood_cov_prefactor * np.eye(obs_dim)
     covs = np.repeat(
         cov[np.newaxis, :, :],
         repeats=num_mixture_components,
@@ -329,6 +330,8 @@ def sample_mixture_model(num_obs: int,
         cluster_assignments=cluster_assignments,
         mixture_params=mixture_params,
         obs=obs,
+        centroids_prior_cov_prefactor=centroids_prior_cov_prefactor,
+        likelihood_cov_prefactor=likelihood_cov_prefactor,
     )
 
     return mixture_model_results

@@ -288,7 +288,8 @@ def dp_means(X: np.ndarray,
     num_centers = centers_init.shape[0]
     centers[:num_centers, :] = centers_init
 
-    cluster_assignments = np.zeros((max_num_clusters, max_num_clusters))
+    cluster_assignments = np.zeros((max_num_clusters, max_num_clusters),
+                                   dtype=np.int8)  # Only need to store 0/1
 
     iter_idx = 0
     for iter_idx in range(max_iter):
@@ -301,7 +302,6 @@ def dp_means(X: np.ndarray,
             # compute distance of new sample from previous centroids:
             distances = np.linalg.norm(X[obs_idx, :] - centers[:num_centers, :],
                                        axis=1)
-            assert len(distances) == num_centers
 
             # if smallest distance greater than cutoff max_distance_param, create new cluster.
             if np.min(distances) > max_distance_param:
@@ -319,14 +319,14 @@ def dp_means(X: np.ndarray,
                 new_assigned_cluster = np.argmin(distances)
 
             # Check whether this datum is being assigned to a new center.
-            if iter_idx > 1 and cluster_assignments[obs_idx, new_assigned_cluster] != 1:
+            if iter_idx > 0 and cluster_assignments[obs_idx, new_assigned_cluster] == 0:
                 no_datum_reassigned = False
 
             # Record the observation's assignment
             cluster_assignments[obs_idx, new_assigned_cluster] = 1
 
         # If no data was assigned to a different cluster, then, we've converged.
-        if no_datum_reassigned:
+        if iter_idx > 0 and no_datum_reassigned:
             break
 
         # Update centers based on assigned data.
