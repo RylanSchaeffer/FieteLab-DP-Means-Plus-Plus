@@ -1,2 +1,3 @@
 .idea
 dpmeans_venv
+**/__pycache__/

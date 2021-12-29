@@ -1,6 +1,7 @@
 from itertools import product
 import numpy as np
 import pandas as pd
+from timeit import default_timer as timer
 
 from src.data.synthetic import sample_mixture_model
 from src.inference.dpmeans_quick import DPMeans
@@ -9,9 +10,9 @@ from src.plot import plot_all
 
 obs_dim = 13
 
-max_distance_params = np.logspace(-3, 3, 41)
-init_methods = ['dp-means']  # , 'dp-means++']
-repeats = np.arange(5)
+max_distance_params = np.logspace(-3, 3, 61)
+init_methods = ['dp-means', 'dp-means++']
+repeats = np.arange(25)
 df_rows = []
 
 for repeat_idx in repeats:
@@ -30,7 +31,11 @@ for repeat_idx in repeats:
             init=init_method,
             random_state=repeat_idx)
 
+        # time using timer because https://stackoverflow.com/a/25823885/4570472
+        start_time = timer()
         dpmeans.fit(X=mixture_model_results['obs'])
+        stop_time = timer()
+        runtime = stop_time - start_time
 
         row = {
             'Initialization': init_method,
@@ -43,6 +48,7 @@ for repeat_idx in repeats:
             'centroids_prior_cov_prefactor': mixture_model_results['centroids_prior_cov_prefactor'],
             'likelihood_cov_prefactor': mixture_model_results['likelihood_cov_prefactor'],
             'Num True Clusters': len(np.unique(mixture_model_results['cluster_assignments'])),
+            'Runtime': runtime,
         }
 
         scores, pred_cluster_assignments = compute_predicted_clusters_scores(
@@ -55,4 +61,5 @@ for repeat_idx in repeats:
 
 results_df = pd.DataFrame(df_rows)
 
-plot_all(results_df=results_df)
+plot_all(results_df=results_df,
+         plot_dir='00_playground_results')

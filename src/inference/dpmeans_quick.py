@@ -6,6 +6,7 @@ from threadpoolctl import threadpool_info
 from typing import Dict, List, Tuple
 import warnings
 
+from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_array, check_random_state
 from sklearn.utils.extmath import row_norms, stable_cumsum
@@ -15,70 +16,175 @@ from sklearn.utils.validation import check_is_fitted, _check_sample_weight
 
 def _init_centroids_dpmeans(X: np.ndarray,
                             max_distance_param: float,
-                            x_squared_norms,
-                            random_state,
+                            x_squared_norms: np.ndarray,
+                            random_state: np.random.RandomState,
                             **kwargs):
-    num_obs, obs_dim = X.shape
-    centers = np.zeros_like(X)
+    n_samples, n_features = X.shape
+
+    # We can have (up to) as many clusters as samples
+    centers = np.empty((n_samples, n_features), dtype=X.dtype)
 
     # Always take the first observation as a center, since no centroids exist
     # to compare against.
     centers[0] = X[0]
-    num_centers = 1
+    n_clusters = 1
 
     # Consequently, we start with the first observation
-    for obs_idx in range(1, num_obs):
+    for obs_idx in range(1, n_samples):
         x = X[obs_idx, np.newaxis, :]  # Shape: (1, sample dim)
-        distances_x_to_centers = cdist(x, centers[:num_centers, :])
+        distances_x_to_centers = cdist(x, centers[:n_clusters, :])
         if np.min(distances_x_to_centers) > max_distance_param:
-            centers[num_centers] = x
-            num_centers += 1
+            centers[n_clusters] = x
+            n_clusters += 1
 
-    return centers[:num_centers]
+    return centers[:n_clusters]
+
+
+# def _init_centroids_dpmeans_plusplus_old(X: np.ndarray,
+#                                          max_distance_param: float,
+#                                          x_squared_norms: np.ndarray,
+#                                          random_state: np.random.RandomState,
+#                                          n_local_trials: int = None,
+#                                          **kwargs):
+#     """Computational component for initialization of n_clusters by
+#     k-means++. Prior validation of data is assumed.
+#
+#     Parameters
+#     ----------
+#     X : {ndarray, sparse matrix} of shape (n_samples, n_features)
+#         The data to pick seeds for.
+#
+#     n_clusters : int
+#         The number of seeds to choose.
+#
+#     x_squared_norms : ndarray of shape (n_samples,)
+#         Squared Euclidean norm of each data point.
+#
+#     random_state : RandomState instance
+#         The generator used to initialize the centers.
+#         See :term:`Glossary <random_state>`.
+#
+#     n_local_trials : int, default=None
+#         The number of seeding trials for each center (except the first),
+#         of which the one reducing inertia the most is greedily chosen.
+#         Set to None to make the number of trials depend logarithmically
+#         on the number of seeds (2+log(k)); this is the default.
+#
+#     Returns
+#     -------
+#     centers : ndarray of shape (n_clusters, n_features)
+#         The inital centers for k-means.
+#
+#     indices : ndarray of shape (n_clusters,)
+#         The index location of the chosen centers in the data array X. For a
+#         given index and center, X[index] = center.
+#     """
+#     assert max_distance_param > 0.
+#
+#     n_samples, n_features = X.shape
+#     centers = np.zeros_like(X)
+#
+#     # Always take the first observation as a center, since no centroids exist
+#     # to compare against. Data is randomly permuted beforehand, meaning
+#     # taking the first is equivalent to sampling uniformly at random.
+#     centers[0] = X[0]
+#     n_clusters = 1
+#
+#     # Initialize list of closest distances and calculate current potential
+#     closest_dist_sq = euclidean_distances(
+#         centers[:n_clusters], X, Y_norm_squared=x_squared_norms,
+#         squared=True)
+#     current_pot = closest_dist_sq.sum()
+#
+#     # Pick the remaining n_clusters-1 points
+#     for c in range(1, n_clusters):
+#         # Choose center candidates by sampling with probability proportional
+#         # to the squared distance to the closest existing center
+#         rand_vals = random_state.random_sample(n_local_trials) * current_pot
+#         candidate_ids = np.searchsorted(stable_cumsum(closest_dist_sq),
+#                                         rand_vals)
+#         # XXX: numerical imprecision can result in a candidate_id out of range
+#         np.clip(candidate_ids, None, closest_dist_sq.size - 1,
+#                 out=candidate_ids)
+#
+#         # Compute distances to center candidates
+#         distance_to_candidates = euclidean_distances(
+#             X[candidate_ids], X, Y_norm_squared=x_squared_norms, squared=True)
+#
+#         # update closest distances squared and potential for each candidate
+#         np.minimum(closest_dist_sq, distance_to_candidates,
+#                    out=distance_to_candidates)
+#         candidates_pot = distance_to_candidates.sum(axis=1)
+#
+#         # Decide which candidate is the best
+#         best_candidate = np.argmin(candidates_pot)
+#         current_pot = candidates_pot[best_candidate]
+#         closest_dist_sq = distance_to_candidates[best_candidate]
+#         best_candidate = candidate_ids[best_candidate]
+#
+#         # Permanently add best center candidate found in local tries
+#         if sp.issparse(X):
+#             centers[c] = X[best_candidate].toarray()
+#         else:
+#             centers[c] = X[best_candidate]
+#         indices[c] = best_candidate
+#
+#     return centers, indices
 
 
 def _init_centroids_dpmeans_plusplus(X: np.ndarray,
                                      max_distance_param: float,
-                                     x_squared_norms,
-                                     random_state, n_local_trials=None):
-    """Computational component for initialization of n_clusters by
-    k-means++. Prior validation of data is assumed.
+                                     x_squared_norms: np.ndarray,
+                                     random_state: np.random.RandomState,
+                                     n_local_trials: int = None):
+    """Init clusters according to DP-means++
 
     Parameters
     ----------
-    X : {ndarray, sparse matrix} of shape (n_samples, n_features)
-        The data to pick seeds for.
+    X : array or sparse matrix, shape (n_samples, n_features)
+        The data to pick seeds for. To avoid memory copy, the input data
+        should be double precision (dtype=np.float64).
 
-    n_clusters : int
-        The number of seeds to choose.
+    n_clusters : integer
+        The number of seeds to choose
 
-    x_squared_norms : ndarray of shape (n_samples,)
+    x_squared_norms : array, shape (n_samples,)
         Squared Euclidean norm of each data point.
 
-    random_state : RandomState instance
-        The generator used to initialize the centers.
+    random_state : int, RandomState instance
+        The generator used to initialize the centers. Use an int to make the
+        randomness deterministic.
         See :term:`Glossary <random_state>`.
 
-    n_local_trials : int, default=None
+    n_local_trials : integer, optional
         The number of seeding trials for each center (except the first),
         of which the one reducing inertia the most is greedily chosen.
         Set to None to make the number of trials depend logarithmically
         on the number of seeds (2+log(k)); this is the default.
 
-    Returns
-    -------
-    centers : ndarray of shape (n_clusters, n_features)
-        The inital centers for k-means.
-
-    indices : ndarray of shape (n_clusters,)
-        The index location of the chosen centers in the data array X. For a
-        given index and center, X[index] = center.
+    Notes
+    -----
+    Selects initial cluster centers for k-mean clustering in a smart way
+    to speed up convergence. see: Arthur, D. and Vassilvitskii, S.
+    "k-means++: the advantages of careful seeding". ACM-SIAM symposium
+    on Discrete algorithms. 2007
     """
-    assert concentration > 0.
+
+    assert max_distance_param > 0.
 
     n_samples, n_features = X.shape
 
+    # How many clusters are appropriate? We know that the prior on the
+    # number of clusters is alpha * log ( 1 + N \alpha). But what is alpha?
+    # For DP-Means, alpha = (1 + rho/sigma)^{d/2} exp(-lambda/2 sigma).
+    # alpha = np.exp(-max_distance_param / 2.)
+    # n_clusters = int(alpha * np.log(1. + n_samples / alpha))
+    # n_clusters = max(n_clusters, 1)
+    n_clusters = int(np.log(1. + n_samples))
+
     centers = np.empty((n_clusters, n_features), dtype=X.dtype)
+
+    assert x_squared_norms is not None, 'x_squared_norms None in _init_centroids_dpmeans_plusplus'
 
     # Set the number of local seeding trials if none is given
     if n_local_trials is None:
@@ -87,14 +193,12 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
         # that it helped.
         n_local_trials = 2 + int(np.log(n_clusters))
 
-    # Pick first center randomly and track index of point
+    # Pick first center randomly
     center_id = random_state.randint(n_samples)
-    indices = np.full(n_clusters, -1, dtype=int)
     if sp.issparse(X):
         centers[0] = X[center_id].toarray()
     else:
         centers[0] = X[center_id]
-    indices[0] = center_id
 
     # Initialize list of closest distances and calculate current potential
     closest_dist_sq = euclidean_distances(
@@ -117,25 +221,31 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
         distance_to_candidates = euclidean_distances(
             X[candidate_ids], X, Y_norm_squared=x_squared_norms, squared=True)
 
-        # update closest distances squared and potential for each candidate
-        np.minimum(closest_dist_sq, distance_to_candidates,
-                   out=distance_to_candidates)
-        candidates_pot = distance_to_candidates.sum(axis=1)
-
         # Decide which candidate is the best
-        best_candidate = np.argmin(candidates_pot)
-        current_pot = candidates_pot[best_candidate]
-        closest_dist_sq = distance_to_candidates[best_candidate]
-        best_candidate = candidate_ids[best_candidate]
+        best_candidate = None
+        best_pot = None
+        best_dist_sq = None
+        for trial in range(n_local_trials):
+            # Compute potential when including center candidate
+            new_dist_sq = np.minimum(closest_dist_sq,
+                                     distance_to_candidates[trial])
+            new_pot = new_dist_sq.sum()
+
+            # Store result if it is the best local trial so far
+            if (best_candidate is None) or (new_pot < best_pot):
+                best_candidate = candidate_ids[trial]
+                best_pot = new_pot
+                best_dist_sq = new_dist_sq
 
         # Permanently add best center candidate found in local tries
         if sp.issparse(X):
             centers[c] = X[best_candidate].toarray()
         else:
             centers[c] = X[best_candidate]
-        indices[c] = best_candidate
+        current_pot = best_pot
+        closest_dist_sq = best_dist_sq
 
-    return centers, indices
+    return centers
 
 
 class DPMeans:
@@ -206,9 +316,13 @@ class DPMeans:
                                               random_state=random_state,
                                               x_squared_norms=x_squared_norms)
         elif isinstance(init, str) and init == 'dp-means++':
-            centers = _init_centroids_dpmeans_plusplus(X, max_distance_param=max_distance_param,
-                                                       random_state=random_state,
-                                                       x_squared_norms=x_squared_norms)
+            # centers = _init_centroids_dpmeans_plusplus_old(X, max_distance_param=max_distance_param,
+            #                                            random_state=random_state,
+            #                                            x_squared_norms=x_squared_norms)
+            centers = _init_centroids_dpmeans_plusplus(X=X,
+                                                       max_distance_param=max_distance_param,
+                                                       x_squared_norms=x_squared_norms,
+                                                       random_state=random_state)
         elif isinstance(init, str) and init == 'random':
             # seeds = random_state.permutation(n_samples)[:n_clusters]
             # centers = X[seeds]
