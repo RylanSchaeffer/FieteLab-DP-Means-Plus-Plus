@@ -161,6 +161,10 @@ class DPMeans:
         self.copy_x = copy_x
         self.algorithm = algorithm
 
+        self.cluster_centers_ = None
+        self.labels_ = None
+        self.n_iter_ = None
+
     def _init_centroids(self, X, x_squared_norms, init, random_state,
                         init_size=None):
         """Compute the initial centroids.
@@ -340,5 +344,10 @@ def dp_means(X: np.ndarray,
 
     # Increment by 1 since range starts at 0 but humans start at 1
     iter_idx += 1
+
+    # Clean up centers by removing any center with no data assigned
+    points_per_cluster = np.sum(cluster_assignments, axis=0)
+    nonempty_clusters = points_per_cluster > 0
+    centers = centers[nonempty_clusters]
 
     return cluster_assignments, centers, iter_idx
