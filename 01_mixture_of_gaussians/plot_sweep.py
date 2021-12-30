@@ -11,8 +11,14 @@ sweep_results_df_path = os.path.join(results_dir, 'sweep_results.csv')
 
 sweep_results_df = pd.read_csv(sweep_results_df_path, index_col=None)
 
+# Keep only finished runs
+sweep_results_df = sweep_results_df[sweep_results_df['State'] == 'finished']
+
+# Compute rho / sigma aka SNR
 sweep_results_df['cov_prefactor_ratio'] = sweep_results_df['centroids_prior_cov_prefactor']\
-                                 / sweep_results_df['likelihood_cov_prefactor']
+                                          / sweep_results_df['likelihood_cov_prefactor']
 
 plot_all(sweep_results_df=sweep_results_df,
          plot_dir=results_dir)
+
+print('Finished.')

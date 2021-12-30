@@ -13,12 +13,13 @@ def plot_all(sweep_results_df: pd.DataFrame,
     os.makedirs(plot_dir, exist_ok=True)
 
     plot_fns = [
-        plot_loss_by_max_distance_colored_by_initialization,
         plot_loss_by_cov_prefactor_ratio_colored_by_initialization,
+        plot_loss_by_max_distance_colored_by_initialization,
         plot_num_iters_by_max_distance_colored_by_initialization,
         plot_num_clusters_by_max_distance_colored_by_initialization,
         plot_num_initial_clusters_by_max_distance_colored_by_initialization,
         plot_runtime_by_max_distance_colored_by_initialization,
+        plot_scores_by_cov_prefactor_ratio_colored_by_initialization,
         plot_scores_by_max_distance_colored_by_initialization,
     ]
 
@@ -34,7 +35,7 @@ def plot_loss_by_cov_prefactor_ratio_colored_by_initialization(
     sns.lineplot(data=sweep_results_df,
                  x='cov_prefactor_ratio',
                  y='Loss',
-                 hue='Initialization')
+                 hue='init_method')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel(r'$\rho / \sigma$')
@@ -52,8 +53,10 @@ def plot_loss_by_max_distance_colored_by_initialization(
         sweep_results_df: pd.DataFrame,
         plot_dir: str):
 
-    sns.lineplot(data=sweep_results_df, x='lambda', y='Loss',
-                 hue='Initialization')
+    sns.lineplot(data=sweep_results_df,
+                 x='max_distance_param',
+                 y='Loss',
+                 hue='init_method')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel(r'$\lambda$')
@@ -70,14 +73,17 @@ def plot_loss_by_max_distance_colored_by_initialization(
 def plot_num_clusters_by_max_distance_colored_by_initialization(
         sweep_results_df: pd.DataFrame,
         plot_dir: str):
-    sns.lineplot(data=sweep_results_df, x='lambda', y='Num Inferred Clusters',
-                 hue='Initialization')
+
+    sns.lineplot(data=sweep_results_df,
+                 x='max_distance_param',
+                 y='Num Inferred Clusters',
+                 hue='init_method')
 
     # Can't figure out how to add another line to Seaborn, so manually adding
     # the next line of Num True Clusters.
-    num_true_clusters_by_lambda = sweep_results_df[['lambda', 'Num True Clusters']].groupby('lambda').agg({
-        'Num True Clusters': ['mean', 'sem']
-    })['Num True Clusters']
+    num_true_clusters_by_lambda = sweep_results_df[['max_distance_param', 'n_clusters']].groupby('max_distance_param').agg({
+        'n_clusters': ['mean', 'sem']
+    })['n_clusters']
 
     means = num_true_clusters_by_lambda['mean'].values
     sems = num_true_clusters_by_lambda['sem'].values
@@ -111,8 +117,11 @@ def plot_num_clusters_by_max_distance_colored_by_initialization(
 def plot_num_initial_clusters_by_max_distance_colored_by_initialization(
         sweep_results_df: pd.DataFrame,
         plot_dir: str):
-    sns.lineplot(data=sweep_results_df, x='lambda', y='Num Initial Clusters',
-                 hue='Initialization')
+
+    sns.lineplot(data=sweep_results_df,
+                 x='max_distance_param',
+                 y='Num Initial Clusters',
+                 hue='init_method')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel(r'$\lambda$')
@@ -129,8 +138,11 @@ def plot_num_initial_clusters_by_max_distance_colored_by_initialization(
 def plot_num_iters_by_max_distance_colored_by_initialization(
         sweep_results_df: pd.DataFrame,
         plot_dir: str):
-    sns.lineplot(data=sweep_results_df, x='lambda', y='Num Iter Till Convergence',
-                 hue='Initialization')
+
+    sns.lineplot(data=sweep_results_df,
+                 x='max_distance_param',
+                 y='Num Iter Till Convergence',
+                 hue='init_method')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel(r'$\lambda$')
@@ -147,10 +159,11 @@ def plot_num_iters_by_max_distance_colored_by_initialization(
 def plot_runtime_by_max_distance_colored_by_initialization(
         sweep_results_df: pd.DataFrame,
         plot_dir: str):
+
     sns.lineplot(data=sweep_results_df,
-                 x='lambda',
+                 x='max_distance_param',
                  y='Runtime',
-                 hue='Initialization')
+                 hue='init_method')
     plt.xscale('log')
     plt.xlabel(r'$\lambda$')
     plt.legend()
@@ -166,6 +179,7 @@ def plot_runtime_by_max_distance_colored_by_initialization(
 def plot_scores_by_cov_prefactor_ratio_colored_by_initialization(
         sweep_results_df: pd.DataFrame,
         plot_dir: str):
+
     scores_columns = [col for col in sweep_results_df.columns.values
                       if 'Score' in col]
 
@@ -173,7 +187,7 @@ def plot_scores_by_cov_prefactor_ratio_colored_by_initialization(
         sns.lineplot(data=sweep_results_df,
                      x='cov_prefactor_ratio',
                      y=score_column,
-                     hue='Initialization')
+                     hue='init_method')
         plt.xscale('log')
         plt.xlabel(r'$\rho / \sigma$')
         plt.legend()
@@ -190,14 +204,15 @@ def plot_scores_by_cov_prefactor_ratio_colored_by_initialization(
 def plot_scores_by_max_distance_colored_by_initialization(
         sweep_results_df: pd.DataFrame,
         plot_dir: str):
+
     scores_columns = [col for col in sweep_results_df.columns.values
                       if 'Score' in col]
 
     for score_column in scores_columns:
         sns.lineplot(data=sweep_results_df,
-                     x='lambda',
+                     x='max_distance_param',
                      y=score_column,
-                     hue='Initialization')
+                     hue='init_method')
         plt.xscale('log')
         plt.xlabel(r'$\lambda$')
         plt.legend()
