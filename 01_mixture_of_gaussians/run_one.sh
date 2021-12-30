@@ -6,8 +6,12 @@
 #SBATCH --mail-user=rylansch
 #SBATCH --mail-type=FAIL
 
-# don't remember what this does
+id=${1}
+
+# update
 export PYTHONPATH=.
+export WANDB_CONFIG_DIR=/om2/user/rylansch
+export WANDB_API_KEY=51a0a43a1b4ba9981701d60c5f6887cd5bf9e03e
 
 source dpmeanspp_venv/bin/activate
 
@@ -15,5 +19,4 @@ source dpmeanspp_venv/bin/activate
 # https://stackoverflow.com/questions/5750450/how-can-i-print-each-command-before-executing
 set -x
 
-# -u flushes output buffer immediately
-python -u 01_mixture_of_gaussians/run.py
+wandb agent rylan/dp-means++-mixture-of-gaussians/${id}
