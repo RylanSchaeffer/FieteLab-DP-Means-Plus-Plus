@@ -3,7 +3,7 @@ project: dp-means++-mixture-of-gaussians
 method: grid
 metric:
   goal: minimize
-  name: loss
+  name: lossf
 parameters:
   n_samples:
     values: [100, 1000]
@@ -19,7 +19,7 @@ parameters:
              10., 25., 50., 75.,
              100., 250., 500., 750.]
   centroids_prior_cov_prefactor:
-    values: [10.]
+    values: [1.]
   likelihood_cov_prefactor:
     values: [1.]
   init_method:
