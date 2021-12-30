@@ -10,10 +10,13 @@ from src.plot import plot_all
 
 obs_dim = 13
 
-max_distance_params = np.logspace(-3, 3, 61)
+max_distance_params = np.logspace(-3, 3, 21)
 init_methods = ['dp-means', 'dp-means++']
+# init_methods = ['dp-means++']
 repeats = np.arange(25)
 df_rows = []
+
+np.random.seed(0)
 
 for repeat_idx in repeats:
 
@@ -41,6 +44,7 @@ for repeat_idx in repeats:
             'Initialization': init_method,
             'lambda': max_distance_param,
             'Num Iter Till Convergence': dpmeans.n_iter_,
+            'Num Initial Clusters': dpmeans.num_init_clusters_,
             'Num Inferred Clusters': dpmeans.num_clusters_,
             'Repeat': repeat_idx,
             'Num Obs': mixture_model_results['obs'].shape[0],
@@ -62,4 +66,4 @@ for repeat_idx in repeats:
 results_df = pd.DataFrame(df_rows)
 
 plot_all(results_df=results_df,
-         plot_dir='00_playground_results')
+         plot_dir='/01_mixture_of_gaussians/results')

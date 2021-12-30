@@ -67,9 +67,29 @@ def plot_num_clusters_by_max_distance_colored_by_initialization(
     plt.close()
 
 
+def plot_num_initial_clusters_by_max_distance_colored_by_initialization(
+        results_df: pd.DataFrame,
+        plot_dir: str):
+
+    sns.lineplot(data=results_df, x='lambda', y='Num Initial Clusters',
+                 hue='Initialization')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.xlabel(r'$\lambda$')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(plot_dir,
+                             f'num_initial_clusters_by_max_dist.png'),
+                bbox_inches='tight',
+                dpi=300)
+    # plt.show()
+    plt.close()
+
+
 def plot_num_iters_by_max_distance_colored_by_initialization(
         results_df: pd.DataFrame,
         plot_dir: str):
+
     sns.lineplot(data=results_df, x='lambda', y='Num Iter Till Convergence',
                  hue='Initialization')
     plt.xscale('log')

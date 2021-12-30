@@ -8,11 +8,11 @@
 
 After cloning the repository, create a virtual environment for Python 3:
 
-`python3 -m venv dpmeans_venv`
+`python3 -m venv dpmeanspp_venv`
 
 Then activate the virtual environment:
 
-`source dpmeans_venv/bin/activate`
+`source dpmeanspp_venv/bin/activate`
 
 Ensure pip is up to date:
 
