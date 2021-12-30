@@ -1,5 +1,6 @@
 from itertools import product
 import numpy as np
+import os
 import pandas as pd
 from timeit import default_timer as timer
 
@@ -10,10 +11,13 @@ from src.plot import plot_all
 
 obs_dim = 13
 
-max_distance_params = np.logspace(-3, 3, 21)
+exp_dir = '01_mixture_of_gaussians'
+results_dir_path = os.path.join(exp_dir, 'results')
+
+max_distance_params = np.logspace(-3, 3, 7)
 init_methods = ['dp-means', 'dp-means++']
 # init_methods = ['dp-means++']
-repeats = np.arange(25)
+repeats = np.arange(5)
 df_rows = []
 
 np.random.seed(0)
@@ -32,7 +36,8 @@ for repeat_idx in repeats:
         dpmeans = DPMeans(
             max_distance_param=max_distance_param,
             init=init_method,
-            random_state=repeat_idx)
+            random_state=repeat_idx,
+            verbose=True)
 
         # time using timer because https://stackoverflow.com/a/25823885/4570472
         start_time = timer()
@@ -43,9 +48,6 @@ for repeat_idx in repeats:
         row = {
             'Initialization': init_method,
             'lambda': max_distance_param,
-            'Num Iter Till Convergence': dpmeans.n_iter_,
-            'Num Initial Clusters': dpmeans.num_init_clusters_,
-            'Num Inferred Clusters': dpmeans.num_clusters_,
             'Repeat': repeat_idx,
             'Num Obs': mixture_model_results['obs'].shape[0],
             'Obs Dim': mixture_model_results['obs'].shape[1],
@@ -53,6 +55,10 @@ for repeat_idx in repeats:
             'likelihood_cov_prefactor': mixture_model_results['likelihood_cov_prefactor'],
             'Num True Clusters': len(np.unique(mixture_model_results['cluster_assignments'])),
             'Runtime': runtime,
+            'Num Iter Till Convergence': dpmeans.n_iter_,
+            'Num Initial Clusters': dpmeans.num_init_clusters_,
+            'Num Inferred Clusters': dpmeans.num_clusters_,
+            'Loss': dpmeans.loss_,
         }
 
         scores, pred_cluster_assignments = compute_predicted_clusters_scores(
@@ -64,6 +70,7 @@ for repeat_idx in repeats:
         df_rows.append(row)
 
 results_df = pd.DataFrame(df_rows)
+results_df.to_csv(os.path.join(results_dir_path, 'results.csv'))
 
 plot_all(results_df=results_df,
-         plot_dir='/01_mixture_of_gaussians/results')
+         plot_dir=results_dir_path)

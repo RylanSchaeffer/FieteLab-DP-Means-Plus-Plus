@@ -5,6 +5,7 @@ from threadpoolctl import threadpool_info
 from typing import Dict, List, Tuple
 import warnings
 
+from sklearn.cluster import KMeans
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_array, check_random_state

@@ -9,6 +9,8 @@
 # don't remember what this does
 export PYTHONPATH=.
 
+source dpmeanspp_venv/bin/activate
+
 # write the executed command to the slurm output file for easy reproduction
 # https://stackoverflow.com/questions/5750450/how-can-i-print-each-command-before-executing
 set -x

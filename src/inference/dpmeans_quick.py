@@ -10,7 +10,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_array, check_random_state
 from sklearn.utils.extmath import row_norms, stable_cumsum
-from sklearn.utils.sparsefuncs import mean_variance_axis
+# from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import check_is_fitted, _check_sample_weight
 
 
@@ -221,18 +221,21 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
     for c in range(1, max_n_clusters):
 
         # Initialize list of closest distances and calculate current potential
-        distances_to_existing_centers = euclidean_distances(
+        squared_distances_to_existing_centers = euclidean_distances(
             X=centers[chosen_center_indices],
             Y=X,
             # Y_norm_squared=x_squared_norms,  # TODO: why does this give incorrect answers?
             squared=True)
-        distance_to_nearest_center = np.min(distances_to_existing_centers, axis=0)
+        squared_distances_to_nearest_center = np.min(
+            squared_distances_to_existing_centers,
+            axis=0)
 
         # Terminate when every sample is within the maximum allowable distance
-        if np.all(distance_to_nearest_center < max_distance_param_squared):
+        if np.all(squared_distances_to_nearest_center < max_distance_param_squared):
             break
 
-        sampling_distribution = distance_to_nearest_center / np.sum(distance_to_nearest_center)
+        sampling_distribution = squared_distances_to_nearest_center \
+                                / np.sum(squared_distances_to_nearest_center)
 
         center_id = random_state.choice(
             a=n_samples,
@@ -284,6 +287,7 @@ class DPMeans:
         self.num_init_clusters_ = None
         self.labels_ = None
         self.n_iter_ = None
+        self.loss_ = None
 
     def _init_centroids(self, X, x_squared_norms, init, random_state,
                         init_size=None):
@@ -388,11 +392,53 @@ class DPMeans:
                 X += X_mean
             centers += X_mean
 
+        # Shape: (num centers, num data)
+        squared_distances_to_centers = euclidean_distances(
+            X=centers,
+            Y=X,
+            squared=True)
+        # Shape: (num data,)
+        squared_distances_to_nearest_center = np.min(
+            squared_distances_to_centers,
+            axis=0)
+        loss = np.sum(squared_distances_to_nearest_center)
+
         self.cluster_centers_ = centers
         self.num_clusters_ = centers.shape[0]
         self.labels_ = labels
         self.n_iter_ = n_iter_
+        self.loss_ = loss
         return self
+
+    def score(self, X, y=None, sample_weight=None):
+        """Opposite of the value of X on the K-means objective.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            New data.
+
+        y : Ignored
+            Not used, present here for API consistency by convention.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            The weights for each observation in X. If None, all observations
+            are assigned equal weight.
+
+        Returns
+        -------
+        score : float
+            Opposite of the value of X on the K-means objective.
+        """
+        check_is_fitted(self)
+
+        X = self._check_test_data(X)
+        x_squared_norms = row_norms(X, squared=True)
+        sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
+
+        return -_labels_inertia(X, sample_weight, x_squared_norms,
+                                self.cluster_centers_)[1]
+
 
 
 def dp_means(X: np.ndarray,
