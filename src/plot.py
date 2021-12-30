@@ -15,6 +15,7 @@ def plot_all(sweep_results_df: pd.DataFrame,
     plot_fns = [
         plot_loss_by_cov_prefactor_ratio_colored_by_initialization,
         plot_loss_by_max_distance_colored_by_initialization,
+        plot_loss_by_max_distance_and_cov_prefactor_ratio_split_by_initialization,
         plot_num_iters_by_max_distance_colored_by_initialization,
         plot_num_clusters_by_max_distance_colored_by_initialization,
         plot_num_initial_clusters_by_max_distance_colored_by_initialization,
@@ -64,6 +65,68 @@ def plot_loss_by_max_distance_colored_by_initialization(
     plt.tight_layout()
     plt.savefig(os.path.join(plot_dir,
                              f'loss_by_max_dist.png'),
+                bbox_inches='tight',
+                dpi=300)
+    # plt.show()
+    plt.close()
+
+
+def plot_loss_by_max_distance_and_cov_prefactor_ratio_split_by_initialization(
+        sweep_results_df: pd.DataFrame,
+        plot_dir: str):
+
+    """
+    Plots two side-by-side heatmaps of loss (color) by max distance (x) and
+    covariance prefactor ratio (y).
+    """
+
+    # def draw_heatmap(*args, **kwargs):
+    #     data = kwargs.pop('data')
+    #     d = data.pivot(index=args[1], columns=args[0], values=args[2])
+    #     sns.heatmap(d, **kwargs)
+    #
+    # fg = sns.FacetGrid(sweep_results_df, col='ini')
+    # fg.map_dataframe(draw_heatmap, 'label1', 'label2', 'value', cbar=False)
+    #
+    # # Make heatmaps square, not rectangular.
+    # # See https://stackoverflow.com/questions/41471238/how-to-make-heatmap-square-in-seaborn-facetgrid
+    # # get figure background color
+    # facecolor = plt.gcf().get_facecolor()
+    # for ax in fg.axes.flat:
+    #     # set aspect of all axis
+    #     ax.set_aspect('equal', 'box-forced')
+    #     # set background color of axis instance
+    #     ax.set_axis_bgcolor(facecolor)
+    # plt.show()
+
+    fig, axes = plt.subplots(
+        nrows=1,
+        ncols=2,
+        figsize=(8, 4))
+
+    for ax_idx, (init_method, sweep_results_subset_df) in enumerate(
+            sweep_results_df.groupby('init_method')):
+
+        sweep_results_subset_df = sweep_results_subset_df[
+            ['max_distance_param', 'cov_prefactor_ratio', 'Loss']]
+        agg_pivot_table = sweep_results_subset_df.pivot_table(
+            index='cov_prefactor_ratio',        # y
+            columns='max_distance_param',       # x
+            values='Loss',                      # z
+            aggfunc=np.mean,
+            )
+
+        axes[ax_idx].set_title(f'{init_method} Loss')
+        sns.heatmap(data=agg_pivot_table,
+                    mask=~np.isnan(agg_pivot_table),
+                    ax=axes[ax_idx],
+                    square=True)
+        axes[ax_idx].set_xlabel(r'$\lambda$')
+        axes[ax_idx].set_ylabel(r'$\rho / \sigma$')
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(plot_dir,
+                             f'loss_by_max_distance_and_cov_prefactor_ratio_split_by_initialization.png'),
                 bbox_inches='tight',
                 dpi=300)
     # plt.show()
