@@ -102,7 +102,7 @@ def plot_loss_by_max_distance_and_cov_prefactor_ratio_split_by_initialization(
     fig, axes = plt.subplots(
         nrows=1,
         ncols=2,
-        figsize=(8, 4))
+        figsize=(16, 8))
 
     for ax_idx, (init_method, sweep_results_subset_df) in enumerate(
             sweep_results_df.groupby('init_method')):

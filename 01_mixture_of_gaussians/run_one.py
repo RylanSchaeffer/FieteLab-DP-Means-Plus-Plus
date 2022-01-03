@@ -1,3 +1,11 @@
+"""
+Fit DP-Means to a synthetic mixture of isotropic Gaussians.
+
+Example usage:
+
+python 01_mixture_of_gaussians/run_one.py
+"""
+
 from itertools import product
 import numpy as np
 import os
@@ -17,7 +25,7 @@ config_defaults = {
     'max_distance_param': 1.,
     'centroids_prior_cov_prefactor': 10.,
     'likelihood_cov_prefactor': 1.,
-    'init_method': 'dp-means',
+    'init_method': 'dp-means',  # either 'dp-means' or 'dp-means++'
     'repeat_idx': 0,
 }
 wandb.init(project='dp-means++-mixture-of-gaussians',

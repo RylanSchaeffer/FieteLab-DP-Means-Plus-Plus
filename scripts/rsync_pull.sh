@@ -1,1 +1,2 @@
 rsync -avh --exclude='*.joblib' rylansch@openmind-dtn.mit.edu:/om2/user/rylansch/FieteLab-DP-Means-Plus-Plus/01_mixture_of_gaussians/results/ 01_mixture_of_gaussians/results/
+rsync -avh --exclude='*.joblib' rylansch@openmind-dtn.mit.edu:/om2/user/rylansch/FieteLab-DP-Means-Plus-Plus/02_sklearn_examples/results/ 02_sklearn_examples/results/

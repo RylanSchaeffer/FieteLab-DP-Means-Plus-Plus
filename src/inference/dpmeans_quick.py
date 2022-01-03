@@ -347,7 +347,7 @@ class DPMeans:
 
     def fit(self, X, y=None, sample_weight=None):
         random_state = check_random_state(self.random_state)
-        sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
+        # sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
 
         # Validate init array
         init = self.init
@@ -439,6 +439,41 @@ class DPMeans:
         return -_labels_inertia(X, sample_weight, x_squared_norms,
                                 self.cluster_centers_)[1]
 
+    def predict(self, X, sample_weight=None):
+        """Predict the closest cluster each sample in X belongs to.
+
+        In the vector quantization literature, `cluster_centers_` is called
+        the code book and each value returned by `predict` is the index of
+        the closest code in the code book.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            New data to predict.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            The weights for each observation in X. If None, all observations
+            are assigned equal weight.
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
+        """
+        check_is_fitted(self)
+
+        distances_x_to_centers = cdist(X, self.cluster_centers_)
+
+        # sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
+
+        distances_to_cluster_centers = euclidean_distances(
+            X=X,
+            Y=self.cluster_centers_,
+            squared=False)
+
+        labels = np.argmin(distances_to_cluster_centers, axis=1)
+
+        return labels
 
 
 def dp_means(X: np.ndarray,
