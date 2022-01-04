@@ -2,13 +2,15 @@ import pandas as pd
 import wandb
 
 
-def download_wandb_project_runs_results(wandb_sweep_path: str) -> pd.DataFrame:
+def download_wandb_project_runs_results(wandb_project_path: str,
+                                        sweep_name: str = None,
+                                        ) -> pd.DataFrame:
 
     # Download sweep results
     api = wandb.Api()
 
     # Project is specified by <entity/project-name>
-    runs = api.runs(path=wandb_sweep_path)
+    runs = api.runs(path=wandb_project_path)
 
     sweep_results_list = []
     for run in runs:
@@ -22,7 +24,8 @@ def download_wandb_project_runs_results(wandb_sweep_path: str) -> pd.DataFrame:
             {k: v for k, v in run.config.items()
              if not k.startswith('_')})
 
-        summary.update({'State': run.state})
+        summary.update({'State': run.state,
+                        'Sweep': run.sweep.id if run.sweep is not None else None})
         # .name is the human-readable name of the run.
         summary.update({'run_name': run.name})
         sweep_results_list.append(summary)
@@ -31,5 +34,10 @@ def download_wandb_project_runs_results(wandb_sweep_path: str) -> pd.DataFrame:
 
     # Keep only finished runs
     sweep_results_df = sweep_results_df[sweep_results_df['State'] == 'finished']
+
+    if sweep_name is not None:
+        sweep_results_df = sweep_results_df[sweep_results_df['Sweep'] == sweep_name]
+
+    sweep_results_df = sweep_results_df.copy()
 
     return sweep_results_df

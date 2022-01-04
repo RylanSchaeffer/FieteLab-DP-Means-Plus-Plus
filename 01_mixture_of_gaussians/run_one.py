@@ -19,13 +19,13 @@ from src.metrics import compute_predicted_clusters_scores
 
 
 config_defaults = {
-    'n_samples': 100,
-    'n_features': 13,
-    'n_clusters': 10,
+    'n_samples': 10000,
+    'n_features': 10,
+    'n_clusters': 25,
     'max_distance_param': 1.,
-    'centroids_prior_cov_prefactor': 10.,
+    'centroids_prior_cov_prefactor': 5.,
     'likelihood_cov_prefactor': 1.,
-    'init_method': 'dp-means',  # either 'dp-means' or 'dp-means++'
+    'init_method': 'dp-means++',  # either 'dp-means' or 'dp-means++'
     'repeat_idx': 0,
 }
 wandb.init(project='dp-means++-mixture-of-gaussians',

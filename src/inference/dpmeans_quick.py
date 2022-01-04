@@ -19,7 +19,6 @@ def _init_centroids_dpmeans(X: np.ndarray,
                             x_squared_norms: np.ndarray,
                             random_state: np.random.RandomState,
                             **kwargs):
-
     n_samples, n_features = X.shape
 
     # We can have (up to) as many clusters as samples
@@ -162,37 +161,8 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
                                      x_squared_norms: np.ndarray,
                                      random_state: np.random.RandomState,
                                      n_local_trials: int = None):
-    """Init clusters according to DP-means++
-
-    Parameters
-    ----------
-    X : array or sparse matrix, shape (n_samples, n_features)
-        The data to pick seeds for. To avoid memory copy, the input data
-        should be double precision (dtype=np.float64).
-
-    n_clusters : integer
-        The number of seeds to choose
-
-    x_squared_norms : array, shape (n_samples,)
-        Squared Euclidean norm of each data point.
-
-    random_state : int, RandomState instance
-        The generator used to initialize the centers. Use an int to make the
-        randomness deterministic.
-        See :term:`Glossary <random_state>`.
-
-    n_local_trials : integer, optional
-        The number of seeding trials for each center (except the first),
-        of which the one reducing inertia the most is greedily chosen.
-        Set to None to make the number of trials depend logarithmically
-        on the number of seeds (2+log(k)); this is the default.
-
-    Notes
-    -----
-    Selects initial cluster centers for k-mean clustering in a smart way
-    to speed up convergence. see: Arthur, D. and Vassilvitskii, S.
-    "k-means++: the advantages of careful seeding". ACM-SIAM symposium
-    on Discrete algorithms. 2007
+    """
+    Init clusters according to DP-means++
     """
 
     assert max_distance_param > 0.
@@ -215,6 +185,8 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
     # else:
     #     centers[center_id] = X[center_id]
 
+    max_distance_param_squared = np.square(max_distance_param)
+
     # Pick the (up to) n_clusters-1 remaining points
     for _ in range(1, max_n_clusters):
 
@@ -228,16 +200,19 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
             distances_to_existing_centers,
             axis=0)
 
-        # Zero out contenders below max allowable distance
-        distances_to_nearest_center[distances_to_nearest_center <= max_distance_param] = 0.
+        # Zero out contenders below closer than max allowable distance
+        distances_to_nearest_center[distances_to_nearest_center < max_distance_param] = 0.
 
         # Terminate when every sample is within the maximum allowable distance
-        if np.allclose(distances_to_nearest_center, 0.):
+        if np.all(distances_to_nearest_center == 0.):
             break
 
-        sampling_distribution = distances_to_nearest_center \
-                                / np.sum(distances_to_nearest_center)
+        squared_distances_to_nearest_cluster = np.square(distances_to_nearest_center)
 
+        sampling_distribution = squared_distances_to_nearest_cluster / \
+                                np.sum(squared_distances_to_nearest_cluster)
+
+        print(np.max(sampling_distribution))
         center_id = random_state.choice(
             a=n_samples,
             p=sampling_distribution)
@@ -477,7 +452,6 @@ def dp_means(X: np.ndarray,
              centers_init: np.ndarray,
              max_distance_param: float,
              max_iter: int):
-
     # if max_iter = 1, then this is "online."
     # if max_iter > 1, then this if "offline"
     assert max_distance_param > 0.
@@ -545,7 +519,6 @@ def dp_means(X: np.ndarray,
             points_in_assigned_cluster = X[indices_of_points_in_assigned_cluster, :]
 
             if points_in_assigned_cluster.shape[0] >= 1:
-
                 # Recompute centroid from assigned observations.
                 centers[center_idx, :] = np.mean(points_in_assigned_cluster,
                                                  axis=0)

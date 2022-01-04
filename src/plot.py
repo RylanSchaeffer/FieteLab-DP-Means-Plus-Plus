@@ -26,8 +26,14 @@ def plot_all(sweep_results_df: pd.DataFrame,
     ]
 
     for plot_fn in plot_fns:
-        plot_fn(sweep_results_df=sweep_results_df,
-                plot_dir=plot_dir)
+        try:
+            plot_fn(sweep_results_df=sweep_results_df,
+                    plot_dir=plot_dir)
+        except Exception as e:
+            print(f'Exception: {e}')
+
+        # Close all figure windows to not interfere with next plots
+        plt.close('all')
 
 
 def plot_loss_by_cov_prefactor_ratio_colored_by_initialization(

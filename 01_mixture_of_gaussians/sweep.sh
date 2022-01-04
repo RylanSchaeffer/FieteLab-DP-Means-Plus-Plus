@@ -12,8 +12,8 @@
 # export WANDB_API_KEY=51a0a43a1b4ba9981701d60c5f6887cd5bf9e03e
 # wandb sweep 01_mixture_of_gaussians/sweep.yaml
 
-for i in {1..50}
+for i in {1..10}
 do
-  sbatch 01_mixture_of_gaussians/run_one.sh cpi4ynfd
+  sbatch 01_mixture_of_gaussians/run_one.sh cngchcwr
   sleep 10
 done
