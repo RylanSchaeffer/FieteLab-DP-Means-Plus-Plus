@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH -p fiete
+#SBATCH -p use-everything
 #SBATCH -n 1                    # two cores
 #SBATCH --mem=4G                # RAM
 #SBATCH --time=99:99:99         # total run time limit (HH:MM:SS)
-#SBATCH --mail-user=rylansch
+#SBATCH --mail-user=ryl22775585ansch
 #SBATCH --mail-type=FAIL
 
 
@@ -12,7 +12,8 @@
 # export WANDB_API_KEY=51a0a43a1b4ba9981701d60c5f6887cd5bf9e03e
 # wandb sweep 01_mixture_of_gaussians/sweep.yaml
 
-for i in {1..30}
+for i in {1..20}
 do
-  sbatch 01_mixture_of_gaussians/run_one.sh cm8fwjsi
+  sbatch 01_mixture_of_gaussians/run_one.sh cpi4ynfd
+  sleep 10
 done

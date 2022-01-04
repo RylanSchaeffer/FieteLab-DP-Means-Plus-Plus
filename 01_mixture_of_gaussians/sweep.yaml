@@ -8,15 +8,13 @@ parameters:
   init_method:
     values: [ 'dp-means', 'dp-means++']
   n_samples:
-    values: [100, 1000, 10000]
+    values: [1000, 10000]
   n_features:
     values: [2, 10, 50]
   n_clusters:
     values: [2, 5, 25, 50]
   max_distance_param:
-    values: [0.001, 0.005,
-             0.01, 0.05,
-             0.1, 0.5,
+    values: [0.1, 0.5,
              1., 5.,
              10., 50.,
              100., 500.,
@@ -26,4 +24,4 @@ parameters:
   likelihood_cov_prefactor:
     values: [0.5, 1., 5., 10., 50., 100.]
   repeat_idx:
-    values: [0, 1, 2, 3, 4]
+    values: [0]

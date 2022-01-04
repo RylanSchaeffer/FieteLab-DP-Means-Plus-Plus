@@ -11,8 +11,13 @@ def compute_predicted_clusters_scores(cluster_assignment_posteriors: np.ndarray,
     # (r, c)th element is probability the rth observation belongs to cth cluster
     # true_cluster_labels: integer classes with shape (num obs, )
 
-    pred_cluster_labels = np.argmax(cluster_assignment_posteriors,
-                                    axis=1)
+    if len(cluster_assignment_posteriors.shape) == 2:
+        pred_cluster_labels = np.argmax(cluster_assignment_posteriors,
+                                        axis=1)
+    elif len(cluster_assignment_posteriors.shape) == 1:
+        pred_cluster_labels = cluster_assignment_posteriors
+    else:
+        raise ValueError('Wrong number of dimensions.')
 
     rnd_score = rand_score(labels_pred=pred_cluster_labels,
                            labels_true=true_cluster_assignments)
