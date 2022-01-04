@@ -14,6 +14,7 @@ from sklearn.datasets import make_blobs
 
 from src.inference.dpmeans_quick import DPMeans
 
+np.random.seed(0)
 exp_dir = '02_sklearn_examples'
 results_dir = os.path.join(exp_dir, 'results')
 os.makedirs(results_dir, exist_ok=True)
@@ -58,7 +59,7 @@ for col_idx, (dataset_name, X) in enumerate(datasets):
 
         ax = axes[row_idx, col_idx]
         if col_idx == 0:
-            ax.set_ylabel(f'Init Method: {init_method}')
+            ax.set_ylabel(f'{init_method}')
         if row_idx == 0:
             ax.set_title(dataset_name)
 

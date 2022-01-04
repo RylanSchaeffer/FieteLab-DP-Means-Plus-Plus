@@ -254,7 +254,7 @@ def plot_scores_by_cov_prefactor_ratio_colored_by_initialization(
         plt.xscale('log')
         plt.xlabel(r'$\rho / \sigma$')
         plt.legend()
-        plt.ylim(0., 1.05)
+        # plt.ylim(0., 1.05)
         plt.tight_layout()
         plt.savefig(os.path.join(plot_dir,
                                  f'comparison_score={score_column}_by_cov_prefactor_ratio.png'),
@@ -279,7 +279,7 @@ def plot_scores_by_max_distance_colored_by_initialization(
         plt.xscale('log')
         plt.xlabel(r'$\lambda$')
         plt.legend()
-        plt.ylim(0., 1.05)
+        # plt.ylim(0., 1.05)
         plt.tight_layout()
         plt.savefig(os.path.join(plot_dir,
                                  f'comparison_score={score_column}_by_max_dist.png'),

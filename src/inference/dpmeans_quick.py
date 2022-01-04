@@ -19,6 +19,7 @@ def _init_centroids_dpmeans(X: np.ndarray,
                             x_squared_norms: np.ndarray,
                             random_state: np.random.RandomState,
                             **kwargs):
+
     n_samples, n_features = X.shape
 
     # We can have (up to) as many clusters as samples
