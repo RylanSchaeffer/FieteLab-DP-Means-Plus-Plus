@@ -1,3 +1,4 @@
+from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -104,6 +105,9 @@ def plot_loss_by_max_distance_and_cov_prefactor_ratio_split_by_initialization(
         ncols=2,
         figsize=(16, 8))
 
+    min_loss = sweep_results_df['Loss'].min()
+    max_loss = sweep_results_df['Loss'].max()
+
     for ax_idx, (init_method, sweep_results_subset_df) in enumerate(
             sweep_results_df.groupby('init_method')):
 
@@ -118,9 +122,12 @@ def plot_loss_by_max_distance_and_cov_prefactor_ratio_split_by_initialization(
 
         axes[ax_idx].set_title(f'{init_method} Loss')
         sns.heatmap(data=agg_pivot_table,
-                    mask=~np.isnan(agg_pivot_table),
+                    # mask=~np.isnan(agg_pivot_table),
                     ax=axes[ax_idx],
-                    square=True)
+                    vmin=min_loss,
+                    vmax=max_loss,
+                    square=True,
+                    norm=LogNorm())
         axes[ax_idx].set_xlabel(r'$\lambda$')
         axes[ax_idx].set_ylabel(r'$\rho / \sigma$')
 
