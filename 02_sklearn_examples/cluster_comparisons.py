@@ -1,6 +1,6 @@
 """
 
-Copied from https://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
+Modified from https://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
 
 =========================================================
 Comparing different clustering algorithms on toy datasets

@@ -375,7 +375,8 @@ class DPMeans:
         self.num_init_clusters_ = centers_init.shape[0]
 
         if self.verbose:
-            print(f"Init method: {self.init} selected {self.num_init_clusters_} inital clusters.")
+            print(f"Init method: {self.init} selected {self.num_init_clusters_}"
+                  f" inital clusters with lambda={self.max_distance_param}.")
 
         # run DP-means
         labels, centers, n_iter_ = dpmeans_single(
