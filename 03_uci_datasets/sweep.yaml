@@ -6,8 +6,10 @@ metric:
   name: Loss
 parameters:
   dataset_name:
-    values: ['cancer_gene_expression_2016',
-             'boston_housing_1993',
+    values: ['boston_housing_1993',
+             'cancer_gene_expression_2016',
+             'diabetes_hospitals_2014',
+             'electric_grid_stability_2016',
              'wisconsin_breast_cancer_1995']
   init_method:
     values: [ 'dp-means', 'dp-means++']

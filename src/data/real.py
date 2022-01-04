@@ -14,8 +14,8 @@ def load_dataset(dataset_name: str,
         load_dataset_fn = load_boston_housing_1993
     elif dataset_name == 'cancer_gene_expression_2016':
         load_dataset_fn = load_cancer_gene_expression_2016
-    elif dataset_name == 'covid_hospital_treatment_2020':
-        load_dataset_fn = load_covid_hospital_treatment_2020
+    # elif dataset_name == 'covid_hospital_treatment_2020':
+    #     load_dataset_fn = load_covid_hospital_treatment_2020
     elif dataset_name == 'diabetes_hospitals_2014':
         load_dataset_fn = load_diabetes_hospitals_2014
     elif dataset_name == 'electric_grid_stability_2016':
