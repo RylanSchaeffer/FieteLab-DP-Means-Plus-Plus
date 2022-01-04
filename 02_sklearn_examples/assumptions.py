@@ -10,6 +10,7 @@ python 02_sklearn_examples/assumptions.py
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from scipy.spatial.distance import cdist
 from sklearn.datasets import make_blobs
 
 from src.inference.dpmeans_quick import DPMeans
@@ -43,7 +44,7 @@ X_uneq_var, _ = make_blobs(
 X_uneq_proportions = np.vstack((X_3blobs[y == 0][:500], X_3blobs[y == 1][:100], X_3blobs[y == 2][:10]))
 
 datasets = [
-    ('Normal', X_3blobs),
+    ('Ideal', X_3blobs),  # 5.
     ('Anisotropic Variance', X_aniso),
     ('Unequal Variance', X_uneq_var),
     ('Unequal Proportions', X_uneq_proportions),
@@ -54,6 +55,11 @@ fig, axes = plt.subplots(nrows=2,
                          figsize=(3*len(datasets), 6))
 
 for col_idx, (dataset_name, X) in enumerate(datasets):
+
+    # import matplotlib.pyplot as plt
+    #
+    # plt.hist(cdist(X, X).reshape(-1))
+    # plt.show()
 
     for row_idx, init_method in enumerate(['dp-means', 'dp-means++']):
 
