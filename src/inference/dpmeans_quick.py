@@ -477,8 +477,8 @@ def dp_means(X: np.ndarray,
              max_distance_param: float,
              max_iter: int):
 
-    # if num_passes = 1, then this is "online."
-    # if num_passes > 1, then this if "offline"
+    # if max_iter = 1, then this is "online."
+    # if max_iter > 1, then this if "offline"
     assert max_distance_param > 0.
     assert isinstance(max_iter, int)
     assert max_iter > 0
@@ -549,7 +549,7 @@ def dp_means(X: np.ndarray,
                 centers[center_idx, :] = np.mean(points_in_assigned_cluster,
                                                  axis=0)
 
-    # Increment by 1 since range starts at 0 but humans start at 1
+    # Increment by 1 since range starts at 0 but humans start counting at 1
     iter_idx += 1
 
     # Clean up centers by removing any center with no data assigned

@@ -1,0 +1,24 @@
+program: 03_uci_datasets/run_one.py
+project: dp-means++-uci_datasets
+method: grid
+metric:
+  goal: minimize
+  name: Loss
+parameters:
+  dataset_name:
+    values: ['cancer_gene_expression_2016',
+             'boston_housing_1993',
+             'wisconsin_breast_cancer_1995']
+  init_method:
+    values: [ 'dp-means', 'dp-means++']
+  max_distance_param:
+    values: [0.01, 0.025, 0.05, 0.075,
+             0.1, 0.25, 0.5, 0.75,
+             1., 2.5, 5., 7.5,
+             10., 25., 50., 75.,
+             100., 250., 500., 750.,
+             1000.]
+  repeat_idx:
+    values: [0, 1, 2]
+  scaler:
+    values: ['standard', 'robust', 'none']
