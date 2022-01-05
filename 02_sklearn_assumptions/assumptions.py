@@ -133,4 +133,4 @@ for dataset_name, dataset_scores_df in scores_df.groupby('dataset_name'):
         sweep_results_df=scores_df,
         plot_dir=plot_dir)
 
-print('Finished.')
+print('Finished 02_sklearn_assumptions/assumptions.py.')
