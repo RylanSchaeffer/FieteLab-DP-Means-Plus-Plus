@@ -10,7 +10,7 @@ parameters:
   n_samples:
     values: [1000]
   n_features:
-    values: [7, 29]
+    values: [3, 10]
   n_clusters:
     values: [5, 25]
   max_distance_param:

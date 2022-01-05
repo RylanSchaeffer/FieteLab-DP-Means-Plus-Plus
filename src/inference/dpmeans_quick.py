@@ -185,10 +185,8 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
     # else:
     #     centers[center_id] = X[center_id]
 
-    max_distance_param_squared = np.square(max_distance_param)
-
     # Pick the (up to) n_clusters-1 remaining points
-    for _ in range(1, max_n_clusters):
+    for cluster_idx in range(1, max_n_clusters):
 
         # Initialize list of closest distances and calculate current potential
         distances_to_existing_centers = cdist(
@@ -200,8 +198,8 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
             distances_to_existing_centers,
             axis=0)
 
-        # Zero out contenders below closer than max allowable distance
-        distances_to_nearest_center[distances_to_nearest_center < max_distance_param] = 0.
+        # Zero out contenders closer than max allowable distance
+        # distances_to_nearest_center[distances_to_nearest_center < max_distance_param] = 0.
 
         # Terminate when every sample is within the maximum allowable distance
         if np.all(distances_to_nearest_center == 0.):
@@ -212,7 +210,20 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
         sampling_distribution = squared_distances_to_nearest_cluster / \
                                 np.sum(squared_distances_to_nearest_cluster)
 
-        print(np.max(sampling_distribution))
+        # from matplotlib.colors import LogNorm
+        # import matplotlib.pyplot as plt
+        # plt.close('all')
+        # plt.scatter(X[chosen_center_indices, 0],
+        #             X[chosen_center_indices, 1],
+        #             color='r')
+        # plt.scatter(X[sampling_distribution > 1e-5, 0],
+        #             X[sampling_distribution > 1e-5, 1],
+        #             c=sampling_distribution[sampling_distribution > 1e-5],
+        #             norm=LogNorm(vmin=1e-5, vmax=1.),
+        #             s=2)
+        # plt.title(f'Cluster Idx: {cluster_idx}')
+        # plt.show()
+        # plt.close()
         center_id = random_state.choice(
             a=n_samples,
             p=sampling_distribution)
@@ -297,9 +308,10 @@ class DPMeans:
         X = X[random_state.permutation(n_samples)]
 
         if isinstance(init, str) and init == 'dp-means':
-            centers = _init_centroids_dpmeans(X, max_distance_param=max_distance_param,
-                                              random_state=random_state,
-                                              x_squared_norms=x_squared_norms)
+            centers = _init_centroids_dpmeans(X,
+                                              max_distance_param=max_distance_param,
+                                              x_squared_norms=x_squared_norms,
+                                              random_state=random_state,)
         elif isinstance(init, str) and init == 'dp-means++':
             # centers = _init_centroids_dpmeans_plusplus_old(X, max_distance_param=max_distance_param,
             #                                            random_state=random_state,

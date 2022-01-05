@@ -1,5 +1,5 @@
-program: 03_uci_datasets/run_one.py
-project: dp-means++-uci_datasets
+program: 04_tabular_datasets/run_one.py
+project: dp-means++-tabular_datasets
 method: grid
 metric:
   goal: minimize
@@ -21,6 +21,6 @@ parameters:
              100., 250., 500., 750.,
              1000.]
   repeat_idx:
-    values: [0, 1, 2]
+    values: [0, 1]
   scaler:
     values: ['standard', 'robust', 'none']

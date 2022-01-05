@@ -10,10 +10,11 @@
 # Run this, then pipe ID to each individual run
 # export WANDB_CONFIG_DIR=/om2/user/rylansch
 # export WANDB_API_KEY=51a0a43a1b4ba9981701d60c5f6887cd5bf9e03e
+# source dpmeanspp_venv/bin/activate
 # wandb sweep 01_mixture_of_gaussians/sweep.yaml
 
-for i in {1..10}
+for i in {1..3}
 do
-  sbatch 01_mixture_of_gaussians/run_one.sh cngchcwr
+  sbatch 01_mixture_of_gaussians/run_one.sh 1s4yi7j8
   sleep 10
 done

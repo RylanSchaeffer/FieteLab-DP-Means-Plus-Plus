@@ -19,4 +19,4 @@ source dpmeanspp_venv/bin/activate
 # https://stackoverflow.com/questions/5750450/how-can-i-print-each-command-before-executing
 set -x
 
-wandb agent rylan/dp-means++-mixture-of-gaussians/${id}
+wandb agent rylan/dp-means++-tabular_datasets/${id}

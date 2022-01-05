@@ -1,30 +1,11 @@
 """
+Fit DP-Means to Scikit-Learn's demo datasets comparing clustering algorithms.
 
 Modified from https://scikit-learn.org/stable/auto_examples/cluster/plot_cluster_comparison.html
 
-=========================================================
-Comparing different clustering algorithms on toy datasets
-=========================================================
+Example usage:
 
-This example shows characteristics of different
-clustering algorithms on datasets that are "interesting"
-but still in 2D. With the exception of the last dataset,
-the parameters of each of these dataset-algorithm pairs
-has been tuned to produce good clustering results. Some
-algorithms are more sensitive to parameter values than
-others.
-
-The last dataset is an example of a 'null' situation for
-clustering: the data is homogeneous, and there is no good
-clustering. For this example, the null dataset uses the
-same parameters as the dataset in the row above it, which
-represents a mismatch in the parameter values and the
-data structure.
-
-While these examples give some intuition about the
-algorithms, this intuition might not apply to very high
-dimensional data.
-
+python 03_sklearn_comparisons/cluster_comparisons.py
 """
 
 import time

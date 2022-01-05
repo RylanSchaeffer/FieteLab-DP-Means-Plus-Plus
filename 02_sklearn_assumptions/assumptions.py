@@ -1,6 +1,7 @@
 """
-Fit DP-Means to Scikit-Learn's datasets showing K-Means assumptions. Modified
-from https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_assumptions.html
+Fit DP-Means to Scikit-Learn's demo datasets showing K-Means assumptions.
+
+Modified from https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_assumptions.html
 
 Example usage:
 
@@ -11,8 +12,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-from scipy.spatial.distance import cdist
-import seaborn as sns
 from sklearn.datasets import make_blobs
 from timeit import default_timer as timer
 
@@ -26,7 +25,7 @@ results_dir = os.path.join(exp_dir, 'results')
 os.makedirs(results_dir, exist_ok=True)
 
 n_samples = 1500
-random_state = 0
+random_state = 170
 n_clusters = 3
 
 # Construct datasets
@@ -44,7 +43,9 @@ y_aniso = y_3blobs.copy()
 
 # 3. Different variance
 X_uneq_var, y_uneq_var = make_blobs(
-    n_samples=n_samples, cluster_std=[1.0, 2.5, 0.5], random_state=random_state
+    n_samples=n_samples,
+    cluster_std=[1.0, 2.5, 0.5],
+    random_state=random_state
 )
 
 # 4. Unevenly sized blobs
@@ -63,6 +64,7 @@ datasets = [
 ]
 
 max_distance_params = np.logspace(-2, 2, 30)
+# max_distance_params = [1.]
 scores_df_rows = []
 
 for max_distance_param in max_distance_params:
