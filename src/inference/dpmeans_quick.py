@@ -199,7 +199,7 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
             axis=0)
 
         # Zero out contenders closer than max allowable distance
-        # distances_to_nearest_center[distances_to_nearest_center < max_distance_param] = 0.
+        distances_to_nearest_center[distances_to_nearest_center < max_distance_param] = 0.
 
         # Terminate when every sample is within the maximum allowable distance
         if np.all(distances_to_nearest_center == 0.):

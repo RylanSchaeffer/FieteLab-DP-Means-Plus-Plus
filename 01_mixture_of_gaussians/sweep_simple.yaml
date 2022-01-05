@@ -12,7 +12,7 @@ parameters:
   n_features:
     values: [3, 10]
   n_clusters:
-    values: [5, 25]
+    values: [5, 25, 40]
   max_distance_param:
     values: [0.1, 0.5,
              1., 5.,
