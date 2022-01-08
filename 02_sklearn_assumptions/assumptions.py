@@ -84,7 +84,7 @@ for max_distance_param in max_distance_params:
                 ax.set_title(dataset_name)
 
             dpmeans = DPMeans(
-                max_distance_param=max_distance_param,
+                max_distance_param=1.,
                 init=init_method,
                 random_state=0,
                 verbose=True)

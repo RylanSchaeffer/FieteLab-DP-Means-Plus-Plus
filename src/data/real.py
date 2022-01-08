@@ -8,8 +8,10 @@ from typing import Callable, Dict, List, Tuple, Union
 
 
 def load_dataset(dataset_name: str,
+                 dataset_kwargs: Dict = None,
                  data_dir: str = 'data',
                  ) -> Dict[str, np.ndarray]:
+
     if dataset_name == 'boston_housing_1993':
         load_dataset_fn = load_boston_housing_1993
     elif dataset_name == 'cancer_gene_expression_2016':
@@ -24,11 +26,14 @@ def load_dataset(dataset_name: str,
         load_dataset_fn = load_wisconsin_breast_cancer_1995
     else:
         raise NotImplementedError
-    dataset_dict = load_dataset_fn(data_dir=data_dir)
+    dataset_dict = load_dataset_fn(
+        data_dir=data_dir,
+        **dataset_kwargs)
     return dataset_dict
 
 
 def load_boston_housing_1993(data_dir: str = 'data',
+                             **kwargs,
                              ) -> Dict[str, np.ndarray]:
     """
     Properties:
@@ -57,6 +62,7 @@ def load_boston_housing_1993(data_dir: str = 'data',
 
 
 def load_cancer_gene_expression_2016(data_dir: str = 'data',
+                                     **kwargs,
                                      ) -> Dict[str, np.ndarray]:
     """
 
@@ -93,6 +99,7 @@ def load_cancer_gene_expression_2016(data_dir: str = 'data',
 
 
 def load_covid_hospital_treatment_2020(data_dir: str = 'data',
+                                       **kwargs,
                                        ) -> Dict[str, np.ndarray]:
     """
     Most of these are categorical - not good. Return to later
@@ -118,6 +125,7 @@ def load_covid_hospital_treatment_2020(data_dir: str = 'data',
 
 
 def load_diabetes_hospitals_2014(data_dir: str = 'data',
+                                 **kwargs,
                                  ) -> Dict[str, np.ndarray]:
     dataset_dir = os.path.join(data_dir,
                                'diabetes_hospitals_2014')
@@ -136,8 +144,8 @@ def load_diabetes_hospitals_2014(data_dir: str = 'data',
 
 
 def load_electric_grid_stability_2016(data_dir: str = 'data',
+                                      **kwargs,
                                       ) -> Dict[str, np.ndarray]:
-
     dataset_dir = os.path.join(data_dir,
                                'electric_grid_stability_2016')
     data_path = os.path.join(dataset_dir, 'smart_grid_stability_augmented.csv')
@@ -157,6 +165,7 @@ def load_electric_grid_stability_2016(data_dir: str = 'data',
 
 
 def load_template(data_dir: str = 'data',
+                  **kwargs,
                   ) -> Dict[str, np.ndarray]:
     dataset_dir = os.path.join(data_dir,
                                'wisconsin_breast_cancer_1995')
@@ -175,6 +184,7 @@ def load_template(data_dir: str = 'data',
 
 
 def load_wisconsin_breast_cancer_1995(data_dir: str = 'data',
+                                      **kwargs,
                                       ) -> Dict[str, np.ndarray]:
     """
     Properties:

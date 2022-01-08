@@ -22,7 +22,9 @@ def _init_centroids_dpmeans(X: np.ndarray,
     n_samples, n_features = X.shape
 
     # We can have (up to) as many clusters as samples
-    chosen_center_indices = np.zeros(shape=n_samples, dtype=np.bool)
+    chosen_center_indices = np.full(shape=n_samples,
+                                    fill_value=False,
+                                    dtype=np.bool)
 
     # Always take the first observation as a center, since no centroids exist
     # to compare against.
@@ -35,7 +37,7 @@ def _init_centroids_dpmeans(X: np.ndarray,
         if np.min(distances_x_to_centers) > max_distance_param:
             chosen_center_indices[obs_idx] = True
 
-    chosen_centers = X[chosen_center_indices].copy()
+    chosen_centers = X[chosen_center_indices, :].copy()
     return chosen_centers
 
 
@@ -169,15 +171,13 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
 
     n_samples, n_features = X.shape
 
-    # We may have many centers as data
-    max_n_clusters = n_samples
-    # centers = np.empty((max_n_clusters, n_features), dtype=X.dtype)
-
     assert x_squared_norms is not None, 'x_squared_norms None in _init_centroids_dpmeans_plusplus'
 
-    # Always take the first observation as a center, since no centroids exist
+    chosen_center_indices = np.full(shape=n_samples,
+                                    fill_value=False,
+                                    dtype=np.bool)
+    # Take the first observation as a center, since no centroids exist
     # to compare against.
-    chosen_center_indices = np.zeros(shape=n_samples, dtype=np.bool)
     chosen_center_indices[0] = True
     unique_center_ids = {0}
     # if sp.issparse(X):
@@ -185,15 +185,17 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
     # else:
     #     centers[center_id] = X[center_id]
 
-    # Pick the (up to) n_clusters-1 remaining points
+    # We may have as many centers as data
+    max_n_clusters = n_samples
     for cluster_idx in range(1, max_n_clusters):
 
         # Initialize list of closest distances and calculate current potential
+        # Shape: (n_current_clusters, n_samples)
         distances_to_existing_centers = cdist(
             XA=X[chosen_center_indices],
             XB=X,
-            # Y_norm_squared=x_squared_norms,  # TODO: why does this give incorrect answers?
         )
+        # Shape: (n_samples,)
         distances_to_nearest_center = np.min(
             distances_to_existing_centers,
             axis=0)
@@ -205,6 +207,7 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
         if np.all(distances_to_nearest_center == 0.):
             break
 
+        # If we haven't terminated, continue adding clusters.
         squared_distances_to_nearest_cluster = np.square(distances_to_nearest_center)
 
         sampling_distribution = squared_distances_to_nearest_cluster / \
@@ -237,7 +240,7 @@ def _init_centroids_dpmeans_plusplus(X: np.ndarray,
         unique_center_ids.add(center_id)
         chosen_center_indices[center_id] = True
 
-    # Drop the uncreated clusters
+    # Keep only the selected observations as clusters.
     chosen_centers = X[chosen_center_indices].copy()
     return chosen_centers
 
@@ -311,7 +314,7 @@ class DPMeans:
             centers = _init_centroids_dpmeans(X,
                                               max_distance_param=max_distance_param,
                                               x_squared_norms=x_squared_norms,
-                                              random_state=random_state,)
+                                              random_state=random_state, )
         elif isinstance(init, str) and init == 'dp-means++':
             # centers = _init_centroids_dpmeans_plusplus_old(X, max_distance_param=max_distance_param,
             #                                            random_state=random_state,
@@ -464,32 +467,31 @@ def dp_means(X: np.ndarray,
              centers_init: np.ndarray,
              max_distance_param: float,
              max_iter: int):
-    # if max_iter = 1, then this is "online."
-    # if max_iter > 1, then this if "offline"
+    # max_iter = 1 corresponds to "online."
+    # max_iter > 1 corresponds to "offline"
     assert max_distance_param > 0.
     assert isinstance(max_iter, int)
     assert max_iter > 0
 
     num_obs, obs_dim = X.shape
 
-    # Each datum might be its own cluster.
-    max_num_clusters = num_obs
-
     centers = np.zeros_like(X)
     num_centers = centers_init.shape[0]
     centers[:num_centers, :] = centers_init
 
-    cluster_assignments = np.zeros(num_obs, dtype=np.int)
+    cluster_assignments = np.full(num_obs, fill_value=-1, dtype=np.int)
 
     iter_idx = 0
     for iter_idx in range(max_iter):
+
+        print(f'Num centers: {num_centers}')
 
         no_datum_reassigned = True
 
         # Assign data to centers.
         for obs_idx in range(num_obs):
 
-            # compute distance of new sample from previous centroids:
+            # Compute distance from datum to each centroids.
             distances = cdist(
                 XA=X[obs_idx, np.newaxis, :],
                 XB=centers[:num_centers, :])
@@ -511,7 +513,7 @@ def dp_means(X: np.ndarray,
                 new_assigned_cluster = np.argmin(distances)
 
             # Check whether this datum is being assigned to a new center.
-            if iter_idx > 0 and cluster_assignments[obs_idx] != new_assigned_cluster:
+            if cluster_assignments[obs_idx] != new_assigned_cluster:
                 no_datum_reassigned = False
 
             # Record the observation's assignment
@@ -522,6 +524,9 @@ def dp_means(X: np.ndarray,
             break
 
         # Update centers based on assigned data.
+        centers_to_keep = np.full(centers.shape[0],
+                                  fill_value=False,
+                                  dtype=np.bool)
         for center_idx in range(num_centers):
 
             # Get indices of all observations assigned to that cluster.
@@ -530,15 +535,27 @@ def dp_means(X: np.ndarray,
             # Get observations assigned to that cluster.
             points_in_assigned_cluster = X[indices_of_points_in_assigned_cluster, :]
 
-            if points_in_assigned_cluster.shape[0] >= 1:
-                # Recompute centroid from assigned observations.
-                centers[center_idx, :] = np.mean(points_in_assigned_cluster,
-                                                 axis=0)
+            # If this cluster has no assigned points, skip.
+            if points_in_assigned_cluster.shape[0] == 0:
+                continue
+
+            # If this cluster has assigned points, mark to not delete.
+            centers_to_keep[center_idx] = True
+
+            # Recompute centroid from assigned observations.
+            centers[center_idx, :] = np.mean(points_in_assigned_cluster,
+                                             axis=0)
+
+        # Delete old clusters and shift remaining clusters up.
+        centers_to_keep = centers[centers_to_keep, :]
+        num_centers = centers_to_keep.shape[0]
+        centers[:num_centers, :] = centers_to_keep
+        centers[num_centers:, :] = 0.
 
     # Increment by 1 since range starts at 0 but humans start counting at 1
     iter_idx += 1
 
-    # Clean up centers by removing any center with no data assigned
+    # Clean up centers by removing any center with no data assigned.
     cluster_ids, num_assigned_points = np.unique(cluster_assignments,
                                                  return_counts=True)
     nonempty_clusters = cluster_ids[num_assigned_points > 0]

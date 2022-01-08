@@ -19,9 +19,9 @@ from src.metrics import compute_predicted_clusters_scores
 
 
 config_defaults = {
-    'n_samples': 10000,
-    'n_features': 10,
-    'n_clusters': 25,
+    'n_samples': 1000,
+    'n_features': 2,
+    'n_clusters': 10,
     'max_distance_param': 1.,
     'centroids_prior_cov_prefactor': 5.,
     'likelihood_cov_prefactor': 1.,
