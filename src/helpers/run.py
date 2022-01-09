@@ -14,6 +14,10 @@ def download_wandb_project_runs_results(wandb_project_path: str,
 
     sweep_results_list = []
     for run in runs:
+
+        if sweep_name is not None and run.sweep.id != sweep_name:
+            continue
+
         # .summary contains the output keys/values for metrics like accuracy.
         #  We call ._json_dict to omit large files
         summary = run.summary._json_dict

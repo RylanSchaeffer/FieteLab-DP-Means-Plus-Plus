@@ -10,7 +10,7 @@ parameters:
   n_samples:
     values: [1000]
   n_features:
-    values: [3, 10]
+    values: [2, 5, 15]
   n_clusters:
     values: [5, 25, 40]
   max_distance_param:
@@ -19,8 +19,8 @@ parameters:
              10., 50.,
              100., 500.]
   centroids_prior_cov_prefactor:
-    values: [5., 10., 30.]
+    values: [1., 5., 10., 20.]
   likelihood_cov_prefactor:
-    values: [1., 5., 10., 50.]
+    values: [1., 5., 10., 20.]
   repeat_idx:
-    values: [0, 1]
+    values: [0, 1, 2]

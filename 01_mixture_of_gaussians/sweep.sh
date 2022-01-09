@@ -13,7 +13,7 @@
 # source dpmeanspp_venv/bin/activate
 # wandb sweep 01_mixture_of_gaussians/sweep.yaml
 
-for i in {1..3}
+for i in {1..10}
 do
   sbatch 01_mixture_of_gaussians/run_one.sh jy4gzpi5
   sleep 10
