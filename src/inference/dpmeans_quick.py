@@ -14,32 +14,6 @@ from sklearn.utils.extmath import row_norms, stable_cumsum
 from sklearn.utils.validation import check_is_fitted, _check_sample_weight
 
 
-def _init_centroids_dpmeans(X: np.ndarray,
-                            max_distance_param: float,
-                            x_squared_norms: np.ndarray,
-                            random_state: np.random.RandomState,
-                            **kwargs):
-    n_samples, n_features = X.shape
-
-    # We can have (up to) as many clusters as samples
-    chosen_center_indices = np.full(shape=n_samples,
-                                    fill_value=False,
-                                    dtype=np.bool)
-
-    # Always take the first observation as a center, since no centroids exist
-    # to compare against.
-    chosen_center_indices[0] = True
-
-    # Consequently, we start with the first observation
-    for obs_idx in range(1, n_samples):
-        x = X[obs_idx, np.newaxis, :]  # Shape: (1, sample dim)
-        distances_x_to_centers = cdist(x, X[chosen_center_indices, :])
-        if np.min(distances_x_to_centers) > max_distance_param:
-            chosen_center_indices[obs_idx] = True
-
-    chosen_centers = X[chosen_center_indices, :].copy()
-    return chosen_centers
-
 
 # def _init_centroids_dpmeans_plusplus(X: np.ndarray,
 #                                      max_distance_param: float,

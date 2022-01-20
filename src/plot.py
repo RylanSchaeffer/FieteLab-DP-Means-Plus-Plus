@@ -11,6 +11,7 @@ plt.rcParams.update({'font.size': 20})
 
 def plot_all(sweep_results_df: pd.DataFrame,
              plot_dir: str = 'results'):
+
     os.makedirs(plot_dir, exist_ok=True)
 
     plot_fns = [
